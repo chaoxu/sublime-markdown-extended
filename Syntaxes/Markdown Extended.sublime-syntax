@@ -811,6 +811,10 @@ contexts:
           pop: true
         - match: "--"
           scope: invalid.illegal.bad-comments-or-CDATA.html
+  chao-citation:
+    - match: '\[@.*?\]'
+      captures:
+        0: string.other.citation
   ampersand:
     - match: "&(?!([a-zA-Z0-9]+|#[0-9]+|#x[0-9a-fA-F]+);)"
       comment: |
@@ -1052,6 +1056,8 @@ contexts:
         6: constant.other.reference.link.markdown
         7: punctuation.definition.constant.markdown
   inline:
+    - include: latex
+    - include: chao-citation
     - include: escape
     - include: ampersand
     - include: bracket
@@ -1067,7 +1073,6 @@ contexts:
     - include: image-ref
     - include: link-ref-literal
     - include: link-ref
-    - include: latex-inline
   italic:
     - match: |-
         (?x)
@@ -1218,7 +1223,7 @@ contexts:
             2: punctuation.definition.list_item.number.markdown
         - include: inline
   raw:
-    - include: latex-display
+    - include: latex
     - match: '(`+)([^`]|(?!(?<!`)\1(?!`))`)*+(\1)'
       scope: markup.raw.inline.markdown
       captures:
@@ -1297,7 +1302,16 @@ contexts:
         - include: link-ref-literal
         - include: link-ref
 
-  latex-inline:
+  latex:
+    - match: '(?=\\\[)'
+      scope: string.other.math.latex punctuation.definition.string.begin.latex
+      push:
+        - meta_scope: text.tex.latex meta.environment.math.latex
+        - include: scope:text.tex.latex#macros
+        - include: scope:text.tex.latex#math-content
+        - match: '(?<=\\\])'
+          scope: string.other.math.latex punctuation.definition.string.end.latex
+          pop: true
     - match: \\\$
     - match: |-
         (?x)
@@ -1318,8 +1332,6 @@ contexts:
         - match: \$
           scope: string.other.math.latex punctuation.definition.string.end.latex
           pop: true
-
-  latex-display:
     - match: \$\$
       scope: string.other.math.latex punctuation.definition.string.begin.latex
       push:
